@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sleep Study</title>
-  <link rel="manifest" href="manifest.json">
+  <!-- <link rel="manifest" href="manifest.json"> -->
+
   <style>
     /* Toast styles */
     #toast-container {
@@ -16,7 +17,7 @@
       flex-direction: column;
       gap: 0.5rem;
       z-index: 1000;
-      pointer-events: none;
+      pointer-events: none; /* Allow clicks through the container */
     }
     .toast {
       background: rgba(0,0,0,0.8);
@@ -25,6 +26,7 @@
       border-radius: 0.5rem;
       font-size: 0.9rem;
       opacity: 0;
+      /* Animation: fade in for 0.3s, stay for 2.2s, fade out for 0.3s */
       animation: fadein 0.3s forwards, fadeout 0.3s 2.5s forwards;
     }
     @keyframes fadein {
@@ -32,239 +34,550 @@
       to   { opacity: 1; transform: translateY(0); }
     }
     @keyframes fadeout {
-      from { opacity: 1; }
-      to   { opacity: 0; }
+      /* Starts 2.5s after fadein finishes due to animation delay */
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(10px); }
     }
 
     /* Page styles */
     body {
-      font-family: sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
       padding: 1rem;
-      max-width: 400px;
+      max-width: 400px; /* Limit width for mobile-like view */
       margin: auto;
-      position: relative; /* for absolute children */
+      background-color: #f8f9fa;
+      color: #212529;
     }
     button {
       width: 100%;
       padding: 1rem;
       margin: 0.5rem 0;
       font-size: 1.1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 0.5rem;
+      background-color: #007bff;
+      color: white;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    button:active {
+        transform: scale(0.98); /* Click feedback */
+        background-color: #004085;
     }
 
-    /* Small corner buttons */
-    #export {
+    /* Specific Button Styles */
+    #quality {
+      margin-top: 2rem; /* Space above */
+      margin-bottom: 0.5rem;
+      border: 2px dashed #8e44ad; /* Purple */
+      background-color: #f8f0ff;
+      color: #8e44ad;
+    }
+     #quality:hover { background-color: #eadaf7; }
+     #quality:active { background-color: #dcc3f0; }
+
+    #energy {
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      border: 2px dashed #27ae60; /* Green */
+      background-color: #eafaf1;
+      color: #27ae60;
+    }
+    #energy:hover { background-color: #d8f3e2; }
+    #energy:active { background-color: #c1ebce; }
+
+    #undo {
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      background: #f39c12; /* Orange */
+      color: white;
+      border: none;
+    }
+     #undo:hover { background-color: #d38b0d; }
+     #undo:active { background-color: #b8790b; }
+
+    /* Header Buttons (Export/Settings) */
+     #export {
       position: absolute;
       top: 1rem;
       right: 1rem;
-      width: auto;
+      width: auto; /* Auto width */
       padding: 0.5rem 0.75rem;
       font-size: 0.8rem;
-    }
+      background-color: #6c757d; /* Grey */
+     }
+     #export:hover { background-color: #5a6268; }
+     #export:active { background-color: #4d5358; }
 
-    /* Hidden clear behind gear menu */
     #settings {
       position: absolute;
       top: 1rem;
-      right: 4rem;
+      right: 5.5rem; /* Adjusted position to not overlap Export */
     }
     #settings summary {
-      list-style: none;
+      list-style: none; /* Remove dropdown arrow */
       cursor: pointer;
-      font-size: 1.2rem;
+      font-size: 1.5rem; /* Larger icon */
       padding: 0.25rem;
+      display: inline-block; /* Allows padding to work nicely */
     }
-    #settings button {
+    #settings summary::-webkit-details-marker {
+        display: none; /* Hide marker on Chrome/Safari */
+    }
+    #settings button { /* Settings Clear Button */
       width: auto;
       padding: 0.5rem 0.75rem;
       font-size: 0.8rem;
       margin: 0.25rem 0;
+      background-color: #dc3545; /* Red */
+      color: white;
+      border: none;
+      position: absolute; /* Position relative to details */
+      right: 0; /* Align to the right edge of the settings area */
+      top: 2.5rem; /* Position below the gear icon */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 10; /* Ensure it's above other elements if needed */
+    }
+     #settings button:hover { background-color: #c82333; }
+     #settings button:active { background-color: #bd2130; }
+
+
+    /* Style for the SINGLE status indicator */
+    #status-indicator {
+      margin-bottom: 1.5rem; /* Increased margin */
+      padding: 0.75rem; /* Slightly larger padding */
+      border: 1px solid #ccc;
+      border-radius: 0.5rem; /* Match button radius */
+      background-color: #e9ecef; /* Default background */
+      text-align: center;
+      font-size: 1em; /* Slightly larger font */
+      font-weight: bold; /* Make it stand out more */
+      color: #495057; /* Darker grey text */
+      line-height: 1.5; /* Improve readability */
     }
 
-    /* Separate the state log button */
-    #state {
-      margin-top: 2rem;
-      margin-bottom: 1rem;
-      border: 2px dashed #ccc;
-    }
   </style>
 </head>
 <body>
   <h1>🛌 Sleep Study</h1>
+
+  <div style="position: relative; height: 3rem;"> <button id="export">Export</button>
+      <details id="settings">
+        <summary>⚙️</summary>
+        <button id="clear">Clear All Data</button>
+      </details>
+  </div>
+
+
+  <div id="status-indicator">
+    Status: Initializing...
+  </div>
 
   <button id="attempt">Attempting to sleep</button>
   <button id="fail">Failed to sleep</button>
   <button id="wake">Woke Up</button>
   <button id="interrupt">Sleep Interrupted</button>
 
-  <!-- Log energy/sleepiness separated visually -->
-  <button id="state">Log Energy / Sleepiness</button>
+  <button id="quality">Sleep Quality (after sleep)</button>
+  <button id="energy">Energy / Sleepiness (anytime)</button>
 
-  <!-- Export small corner button -->
-  <button id="export">Export</button>
-
-  <!-- Gear menu for settings -->
-  <details id="settings">
-    <summary>⚙️</summary>
-    <button id="clear">Clear All Data</button>
-  </details>
+  <button id="undo">Undo Last Sleep Action</button>
 
   <div id="toast-container"></div>
 
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const CYCLES_KEY = 'sleepStudyCycles';
-    const ACTIVE_KEY = 'sleepStudyActive';
+    // Wrap all script logic in DOMContentLoaded to ensure HTML is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- Storage Keys ---
+      const CYCLES_KEY = 'sleepStudyCycles';
+      const ACTIVE_KEY = 'sleepStudyActive';
+      const ENERGY_LOG_KEY = 'sleepStudyEnergyLog';
 
-    function loadCycles() {
-      return JSON.parse(localStorage.getItem(CYCLES_KEY) || '[]');
-    }
-    function saveCycles(cycles) {
-      localStorage.setItem(CYCLES_KEY, JSON.stringify(cycles));
-    }
-    function loadActive() {
-      return JSON.parse(localStorage.getItem(ACTIVE_KEY) || 'null');
-    }
-    function saveActive(obj) {
-      if (obj === null) localStorage.removeItem(ACTIVE_KEY);
-      else localStorage.setItem(ACTIVE_KEY, JSON.stringify(obj));
-    }
-
-    async function fetchWarsawTimeISO() {
-      try {
-        const res = await fetch('https://worldtimeapi.org/api/timezone/Europe/Warsaw');
-        if (!res.ok) throw new Error();
-        return (await res.json()).datetime;
-      } catch {
-        return new Date().toISOString();
+      // --- Load/Save Functions (with error handling) ---
+      function loadData(key) {
+          try {
+              return JSON.parse(localStorage.getItem(key) || '[]');
+          } catch (e) {
+              console.error(`Error parsing data from localStorage key "${key}":`, e);
+              showToast(`Error loading data: ${key}`);
+              return []; // Return empty array on error
+          }
       }
-    }
-
-    function showToast(msg) {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.textContent = msg;
-      container.appendChild(toast);
-      setTimeout(() => container.removeChild(toast), 3000);
-    }
-
-    async function recordAttempt() {
-      const iso = await fetchWarsawTimeISO();
-      const active = loadActive() || { attempts: [], failures: [] };
-      active.attempts.push({ timestamp: iso });
-      saveActive(active);
-      showToast('Attempt logged');
-    }
-
-    async function recordFailure() {
-      const iso = await fetchWarsawTimeISO();
-      const active = loadActive() || { attempts: [], failures: [] };
-      const batch = active.attempts.slice();
-      let duration = 0;
-      if (batch.length) {
-        const first = new Date(batch[0].timestamp);
-        duration = Math.round((new Date(iso) - first)/60000);
+      function saveData(key, data) {
+          try {
+              localStorage.setItem(key, JSON.stringify(data));
+          } catch (e) {
+              console.error(`Error saving data to localStorage key "${key}":`, e);
+              showToast(`Error saving data: ${key}`);
+          }
       }
-      active.failures.push({
-        failed_attempts: batch,
-        failure_timestamp: iso,
-        failureDurationMin: duration
-      });
-      active.attempts = [];
-      saveActive(active);
-      showToast('Failure recorded');
-    }
+      // Specific wrappers for clarity
+      const loadCycles = () => loadData(CYCLES_KEY);
+      const saveCycles = (data) => saveData(CYCLES_KEY, data);
+      const loadActive = () => loadData(ACTIVE_KEY);
+      const saveActive = (data) => saveData(ACTIVE_KEY, data);
+      const loadEnergyLog = () => loadData(ENERGY_LOG_KEY);
+      const saveEnergyLog = (data) => saveData(ENERGY_LOG_KEY, data);
 
-    async function finalize(interrupted) {
-      const iso = await fetchWarsawTimeISO();
-      const active = loadActive();
-      if (!active || !active.attempts.length) {
-        showToast('No attempt to finalize');
-        return;
+
+      // --- Time Fetching (fetches Poland time, falls back to local) ---
+      async function fetchWarsawTimeISO() {
+        let timeSource = 'local_fallback'; // Default to local fallback
+        const apiUrl = 'https://worldtimeapi.org/api/timezone/Europe/Warsaw';
+
+        try {
+          const res = await fetch(apiUrl);
+          if (!res.ok) throw new Error(`WorldTimeAPI response not OK: ${res.status}`); // Check HTTP status
+
+          const data = await res.json();
+
+          // Validate WorldTimeAPI response structure
+          if (!data || typeof data.datetime !== 'string') {
+            throw new Error('Invalid data structure from WorldTimeAPI');
+          }
+
+          // Create Date object from the datetime field
+          const dateObj = new Date(data.datetime);
+
+          // Validate the parsed date
+          if (isNaN(dateObj.getTime())) {
+            throw new Error('Invalid date format received from WorldTimeAPI');
+          }
+
+          timeSource = 'worldtimeapi.org'; // Mark as API time if successful
+          return { iso: dateObj.toISOString(), source: timeSource };
+
+        } catch (error) {
+          // Log the specific error for debugging
+          console.error("WorldTimeAPI fetch failed, using local device time:", error);
+          // Show a generic error toast to the user
+          showToast(`Using local device time (Time Service Error)`);
+          // Fallback to local time - returns the same object structure
+          return { iso: new Date().toISOString(), source: timeSource };
+        }
       }
-      const first = new Date(active.attempts[0].timestamp);
-      const last  = new Date(active.attempts.slice(-1)[0].timestamp);
-      const now   = new Date(iso);
-      const attempts = active.attempts.length;
-      const fallMin  = Math.round((last-first)/60000);
-      const sleepMin = Math.round((now-last)/60000);
-      const failCount = (active.failures||[]).length;
-      const notes = prompt('Any notes for this session?','')||'';
 
-      const cycles = loadCycles();
-      const dayNum = cycles.length + 1;
-      const date   = active.attempts[0].timestamp.split('T')[0];
-      const label  = `Day${dayNum}, ${date}`;
+      // --- Toast Notification Function ---
+      function showToast(msg) {
+        const container = document.getElementById('toast-container');
+        if (!container) {
+            console.warn("Toast container not found!");
+            return; // Safety check if container isn't ready or removed
+        }
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = msg;
+        container.appendChild(toast);
 
-      const cycle = {
-        dayLabel:        label,
-        failures:        active.failures||[],
-        failureCount:    failCount,
-        attempts:        active.attempts,
-        attemptCount:    attempts,
-        fallAsleepMin:   fallMin,
-        wakeTimestamp:   iso,
-        sleepDurationMin:sleepMin,
-        notes,
-        interrupted,
-        evaluations:     []
-      };
+        // Function to remove the toast element
+        const cleanup = () => {
+            // Check if the toast is still a child before removing
+            if (container.contains(toast)) {
+                container.removeChild(toast);
+            }
+        };
 
-      cycles.push(cycle);
-      saveCycles(cycles);
-      saveActive(null);
-      showToast('Cycle saved');
-    }
+        // Set a fallback timer to ensure removal after animation duration + delay
+        // (300ms fade-in + 2200ms visible + 300ms fade-out = 2800ms total + buffer)
+        const fallbackTimeout = setTimeout(cleanup, 3000);
 
-    async function recordState() {
-      const iso = await fetchWarsawTimeISO();
-      const cycles = loadCycles();
-      if (!cycles.length) {
-        showToast('No session to evaluate');
-        return;
+        // Listen for the end of the 'fadeout' animation
+        toast.addEventListener('animationend', (event) => {
+            // Only remove if it's the fadeout animation ending
+            if (event.animationName === 'fadeout') {
+               clearTimeout(fallbackTimeout); // Clear the safety timeout
+               cleanup();
+            }
+        // Use { once: true } so the listener removes itself after firing
+        }, { once: true });
       }
-      const last = cycles[cycles.length -1];
-      let energy     = parseInt(prompt('Energy (0–10):','5'),10);
-      let sleepiness = parseInt(prompt('Sleepiness (0–10):','5'),10);
-      energy     = isNaN(energy)?0:Math.min(10,Math.max(0,energy));
-      sleepiness = isNaN(sleepiness)?0:Math.min(10,Math.max(0,sleepiness));
-      const notes = prompt('Optional notes:','')||'';
-      last.evaluations = last.evaluations||[];
-      last.evaluations.push({ timestamp:iso, energy, sleepiness, notes });
-      saveCycles(cycles);
-      showToast('Evaluation logged');
-    }
 
-    function exportData() {
-      const data = loadCycles();
-      if (!data.length) {
-        showToast('No data to export');
-        return;
+      // --- Status Indicator Update Function ---
+      function updateStatusIndicator() {
+        const indicator = document.getElementById('status-indicator');
+        if (!indicator) return; // Safety check
+
+        const active = loadActive();
+        const cycles = loadCycles();
+        const energyLog = loadEnergyLog();
+
+        let statusText = '';
+        indicator.style.backgroundColor = '#e9ecef'; // Default idle background
+
+        if (active.length > 0) {
+          // State: Actively attempting sleep
+          statusText = `Status: Attempting sleep (${active.length} attempt${active.length > 1 ? 's' : ''})`;
+          indicator.style.backgroundColor = '#d1ecf1'; // Light blue for active state
+        } else {
+          // State: Idle
+          if (cycles.length > 0) {
+            const lastCycle = cycles[cycles.length - 1];
+            let lastCycleEventDesc = 'Unknown last cycle event.'; // Default text
+            if (lastCycle.type === 'sleep') {
+              lastCycleEventDesc = lastCycle.interrupted ? 'Interrupted sleep ended.' : 'Sleep session ended.';
+            } else if (lastCycle.type === 'failure') {
+              lastCycleEventDesc = 'Failure to sleep recorded.';
+            }
+            statusText = `Status: Idle. Last cycle: ${lastCycleEventDesc}`;
+          } else if (energyLog.length > 0) {
+            statusText = 'Status: Idle. Last event: Energy/sleepiness logged.';
+          } else {
+            statusText = 'Status: Idle. No data recorded yet.';
+          }
+        }
+        indicator.textContent = statusText;
       }
-      const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href     = url;
-      a.download = `sleep-study-cycles-${new Date().toISOString().slice(0,10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('Export ready');
-    }
 
-    function clearData() {
-      localStorage.removeItem(CYCLES_KEY);
-      localStorage.removeItem(ACTIVE_KEY);
-      showToast('All data cleared');
-    }
 
-    document.getElementById('attempt').onclick   = recordAttempt;
-    document.getElementById('fail').onclick      = recordFailure;
-    document.getElementById('wake').onclick      = () => finalize(false);
-    document.getElementById('interrupt').onclick = () => finalize(true);
-    document.getElementById('state').onclick     = recordState;
-    document.getElementById('export').onclick    = exportData;
-    document.getElementById('clear').onclick     = clearData;
-  });
+      // --- Action Functions (Record events, update state and UI) ---
+
+      async function recordAttempt() {
+        const timeResult = await fetchWarsawTimeISO(); // Fetch time (needed internally)
+        const attempts = loadActive();
+        attempts.push({ timestamp: timeResult.iso, timeSource: timeResult.source });
+        saveActive(attempts);
+        showToast(`Attempt logged (Source: ${timeResult.source})`); // No timestamp in toast
+        updateStatusIndicator();
+      }
+
+      async function recordFailure() {
+        const timeResult = await fetchWarsawTimeISO(); // Fetch time
+        const attempts = loadActive();
+        if (!attempts.length) {
+            showToast('No active attempts to mark as failed.');
+            return;
+        }
+        // Calculate duration (requires internal timestamps)
+        const firstTs = attempts[0] ? new Date(attempts[0].timestamp) : null;
+        const dur = firstTs ? Math.round((new Date(timeResult.iso) - firstTs)/60000) : 0;
+        const reason = prompt('Reason for failing to sleep (optional):','') || '';
+        // Check if user cancelled the prompt
+        if (reason === null) { showToast("Failure recording cancelled."); return; }
+
+        const failureSession = {
+          type: 'failure',
+          failed_attempts: attempts.slice(), // Store a copy
+          failure_timestamp: timeResult.iso,
+          timeSource: timeResult.source,
+          failureDurationMin: dur,
+          reason
+        };
+        const cycles = loadCycles();
+        cycles.push(failureSession);
+        saveCycles(cycles);
+        saveActive([]); // Clear active attempts
+        showToast(`Failure session recorded (Attempt duration: ${dur} min)`); // Show duration, not time
+        updateStatusIndicator();
+      }
+
+      async function finalize(interrupted) {
+          const timeResult = await fetchWarsawTimeISO(); // Fetch time
+          const attempts = loadActive();
+          if (!attempts.length) { showToast('No attempt to finalize'); return; }
+
+          // Calculate durations (requires internal timestamps)
+          const firstAttemptTime = new Date(attempts[0].timestamp);
+          const lastAttemptTime  = new Date(attempts[attempts.length - 1].timestamp);
+          const wakeTime = new Date(timeResult.iso);
+          const fallAsleepMin = (lastAttemptTime >= firstAttemptTime) ? Math.round((lastAttemptTime - firstAttemptTime) / 60000) : 0;
+          const sleepDurationMin = (wakeTime >= lastAttemptTime) ? Math.round((wakeTime - lastAttemptTime) / 60000) : 0;
+
+          const notes = prompt('Any notes for this sleep session?','')||'';
+           // Check if user cancelled the prompt
+          if (notes === null) { showToast("Wake recording cancelled."); return; }
+
+          const cycle = {
+            type: 'sleep',
+            attempts, // Contains attempt timestamps and sources
+            attemptCount: attempts.length,
+            fallAsleepMin: fallAsleepMin,
+            wakeTimestamp: timeResult.iso,
+            wakeTimeSource: timeResult.source,
+            sleepDurationMin: sleepDurationMin,
+            interrupted,
+            notes: notes,
+            evaluations: [] // Initialize evaluations array
+          };
+          const cycles = loadCycles();
+          cycles.push(cycle);
+          saveCycles(cycles);
+          saveActive([]); // Clear active attempts
+          showToast(`Sleep session recorded (Duration: ${sleepDurationMin} min)`); // Show duration, not time
+          updateStatusIndicator();
+      }
+
+      async function recordQuality() {
+        const timeResult = await fetchWarsawTimeISO(); // Fetch time
+        const cycles = loadCycles();
+        if (!cycles.length) { showToast('No session to evaluate quality for'); return; }
+        const lastCycle = cycles[cycles.length - 1];
+
+        // Ensure the last cycle was actually a sleep session
+        if (lastCycle.type !== 'sleep') {
+            showToast('Last cycle was not sleep. Cannot log quality.');
+            return;
+        }
+
+        // Prompt without showing time
+        const sleepQ = prompt(`Sleep quality for last session (0–10, text allowed):`,'');
+        if (sleepQ === null) { showToast("Quality logging cancelled."); return; }
+        const notesQ = prompt('Optional notes for sleep quality:','')||'';
+        if (notesQ === null) { showToast("Quality logging cancelled."); return; }
+
+        // Ensure evaluations array exists on the last cycle object
+        if (!Array.isArray(lastCycle.evaluations)) {
+            lastCycle.evaluations = [];
+        }
+
+        lastCycle.evaluations.push({
+            type: 'quality',
+            timestamp: timeResult.iso,
+            timeSource: timeResult.source,
+            sleepQuality: sleepQ,
+            notes: notesQ
+        });
+        saveCycles(cycles); // Save the modified cycles array
+        showToast('Sleep quality logged for last session'); // No time in toast
+        updateStatusIndicator(); // Status indicator doesn't change, but call for consistency
+      }
+
+      async function recordEnergy() {
+        const timeResult = await fetchWarsawTimeISO(); // Fetch time
+        const energy = prompt('Current Energy level (0–10 or text):','');
+         if (energy === null) { showToast("Energy logging cancelled."); return; }
+        const sleepiness = prompt('Current Sleepiness (0–10 or text):','');
+         if (sleepiness === null) { showToast("Energy logging cancelled."); return; }
+        const notesE = prompt('Optional notes for energy/sleepiness:','')||'';
+         if (notesE === null) { showToast("Energy logging cancelled."); return; }
+
+        const energyEntry = {
+          timestamp: timeResult.iso,
+          timeSource: timeResult.source,
+          energy: energy,
+          sleepiness: sleepiness,
+          notes: notesE
+        };
+
+        const energyLog = loadEnergyLog();
+        energyLog.push(energyEntry);
+        saveEnergyLog(energyLog);
+        showToast('Energy/sleepiness logged'); // No time in toast
+        updateStatusIndicator(); // Status indicator might show this if no cycles exist
+      }
+
+      function undoLastAction() {
+          let actionDesc = ''; // Describes action type without time
+          const active = loadActive();
+          const cycles = loadCycles();
+
+          if (active.length > 0) {
+              // Undoing the last attempt
+              active.pop(); // Remove last attempt
+              saveActive(active);
+              actionDesc = 'Attempt';
+          } else if (cycles.length > 0) {
+              // Undoing the last completed cycle
+              const lastCycle = cycles.pop(); // Remove last cycle
+              saveCycles(cycles); // Save shortened cycles list
+
+              // Restore the attempts from the undone cycle to active state
+              if (lastCycle.type === 'failure') {
+                  saveActive(lastCycle.failed_attempts || []);
+                  actionDesc = 'Failed-to-sleep session';
+              } else if (lastCycle.type === 'sleep') {
+                  saveActive(lastCycle.attempts || []);
+                  actionDesc = lastCycle.interrupted ? 'Sleep-interrupted session' : 'Sleep session';
+              } else {
+                   actionDesc = 'Unknown cycle type'; // Should not happen
+              }
+          } else {
+              showToast('Nothing to undo');
+              return; // Exit function if nothing to undo
+          }
+          showToast(`Undid: ${actionDesc}.`); // No time in toast
+          updateStatusIndicator(); // Update status to reflect the new state
+      }
+
+      function exportData() {
+        const cyclesData = loadCycles();
+        const energyData = loadEnergyLog();
+
+        if (!cyclesData.length && !energyData.length) {
+             showToast('No data to export');
+             return;
+        }
+
+        // Prepare data object for export
+        const exportObject = {
+            exportTimestamp: new Date().toISOString(), // Timestamp of the export itself
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // User's local timezone
+            sleepCycles: cyclesData,
+            energyLog: energyData
+        };
+
+        // Create JSON blob
+        const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        // Create download link
+        const a = document.createElement('a');
+        a.href = url;
+        const dateStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        a.download = `sleep-study-data-${dateStr}.json`;
+
+        // Trigger download
+        document.body.appendChild(a); // Append required for Firefox compatibility
+        a.click();
+
+        // Clean up
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast('Export file generated');
+      }
+
+      function clearData() {
+         // Confirmation dialog
+         if (confirm('⚠️ Are you sure you want to delete ALL recorded sleep and energy data?\nThis action cannot be undone!')) {
+            localStorage.removeItem(CYCLES_KEY);
+            localStorage.removeItem(ACTIVE_KEY);
+            localStorage.removeItem(ENERGY_LOG_KEY);
+            showToast('All data cleared');
+            updateStatusIndicator(); // Update status to "No data" state
+         } else {
+            showToast('Clear data cancelled');
+         }
+      }
+
+
+      // --- Initialization on Page Load ---
+
+      // Set the initial status display based on stored data
+      updateStatusIndicator();
+
+      // Optional PWA service worker registration stub
+      // Ensure you have a 'sw.js' file in the same directory for this to work
+      if ('serviceWorker' in navigator) {
+           navigator.serviceWorker.register('sw.js')
+           .then(reg => console.log('Service Worker registered successfully.', reg))
+           .catch(err => console.error('Service Worker registration failed:', err));
+       }
+
+       // --- Wire buttons to their functions ---
+       document.getElementById('attempt').onclick   = recordAttempt;
+       document.getElementById('fail').onclick      = recordFailure;
+       document.getElementById('wake').onclick      = () => finalize(false); // Use arrow function to pass argument
+       document.getElementById('interrupt').onclick = () => finalize(true); // Use arrow function to pass argument
+       document.getElementById('quality').onclick   = recordQuality;
+       document.getElementById('energy').onclick    = recordEnergy;
+       document.getElementById('export').onclick    = exportData;
+       document.getElementById('undo').onclick      = undoLastAction;
+       document.getElementById('clear').onclick     = clearData;
+
+    }); // End of DOMContentLoaded listener
   </script>
 </body>
 </html>
