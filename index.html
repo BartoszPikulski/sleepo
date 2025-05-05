@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sleep Study</title>
-  <!-- <link rel="manifest" href="manifest.json"> -->
-
   <style>
     /* Toast styles */
     #toast-container {
@@ -26,7 +24,6 @@
       border-radius: 0.5rem;
       font-size: 0.9rem;
       opacity: 0;
-      /* Animation: fade in for 0.3s, stay for 2.2s, fade out for 0.3s */
       animation: fadein 0.3s forwards, fadeout 0.3s 2.5s forwards;
     }
     @keyframes fadein {
@@ -34,7 +31,6 @@
       to   { opacity: 1; transform: translateY(0); }
     }
     @keyframes fadeout {
-      /* Starts 2.5s after fadein finishes due to animation delay */
       from { opacity: 1; transform: translateY(0); }
       to   { opacity: 0; transform: translateY(10px); }
     }
@@ -48,6 +44,7 @@
       background-color: #f8f9fa;
       color: #212529;
     }
+    /* General button style */
     button {
       width: 100%;
       padding: 1rem;
@@ -59,6 +56,7 @@
       background-color: #007bff;
       color: white;
       transition: background-color 0.2s ease, transform 0.1s ease;
+      box-sizing: border-box; /* Include padding and border in the element's total width and height */
     }
     button:hover {
         background-color: #0056b3;
@@ -70,8 +68,8 @@
 
     /* Specific Button Styles */
     #quality {
-      margin-top: 2rem; /* Space above */
-      margin-bottom: 0.5rem;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
       border: 2px dashed #8e44ad; /* Purple */
       background-color: #f8f0ff;
       color: #8e44ad;
@@ -89,74 +87,128 @@
     #energy:hover { background-color: #d8f3e2; }
     #energy:active { background-color: #c1ebce; }
 
+    /* --- Undo Button (Moved Back) --- */
     #undo {
-      margin-top: 1rem;
-      margin-bottom: 1rem;
+      margin-top: 1rem; /* Spacing above */
+      margin-bottom: 1rem; /* Spacing below */
       background: #f39c12; /* Orange */
       color: white;
-      border: none;
+      border: none; /* Override general button border if any */
     }
      #undo:hover { background-color: #d38b0d; }
      #undo:active { background-color: #b8790b; }
 
-    /* Header Buttons (Export/Settings) */
-     #export {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      width: auto; /* Auto width */
-      padding: 0.5rem 0.75rem;
-      font-size: 0.8rem;
-      background-color: #6c757d; /* Grey */
-     }
-     #export:hover { background-color: #5a6268; }
-     #export:active { background-color: #4d5358; }
 
+    /* --- Settings Dropdown --- */
+    #settings-container {
+        position: relative; /* Container for positioning the dropdown */
+        text-align: right; /* Align gear icon to the right */
+        margin-bottom: 1rem; /* Space below settings */
+        height: 3rem; /* Reserve space */
+    }
     #settings {
-      position: absolute;
-      top: 1rem;
-      right: 5.5rem; /* Adjusted position to not overlap Export */
+      display: inline-block; /* Allow positioning */
+      position: relative; /* Context for absolute positioning of buttons */
     }
     #settings summary {
       list-style: none; /* Remove dropdown arrow */
       cursor: pointer;
       font-size: 1.5rem; /* Larger icon */
       padding: 0.25rem;
-      display: inline-block; /* Allows padding to work nicely */
+      display: inline-block; /* Allows padding */
+      position: absolute; /* Position gear relative to container */
+      top: 0;
+      right: 0;
     }
     #settings summary::-webkit-details-marker {
         display: none; /* Hide marker on Chrome/Safari */
     }
-    #settings button { /* Settings Clear Button */
-      width: auto;
+    /* Container for the dropdown buttons */
+    #settings-dropdown {
+        display: block; /* Changed from flex */
+        position: absolute;
+        top: 2.5rem; /* Position below the gear */
+        right: 0;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        z-index: 10;
+        width: max-content; /* Adjust width to content */
+        min-width: 150px; /* Minimum width */
+    }
+    /* Style for buttons inside the settings dropdown */
+    #settings-dropdown button {
+      width: 100%; /* Full width within dropdown */
       padding: 0.5rem 0.75rem;
-      font-size: 0.8rem;
-      margin: 0.25rem 0;
-      background-color: #dc3545; /* Red */
+      font-size: 0.9rem; /* Smaller font */
+      margin: 0.25rem 0; /* Spacing between buttons */
+      text-align: left; /* Align text left */
+      background-color: #6c757d; /* Default grey */
       color: white;
       border: none;
-      position: absolute; /* Position relative to details */
-      right: 0; /* Align to the right edge of the settings area */
-      top: 2.5rem; /* Position below the gear icon */
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      z-index: 10; /* Ensure it's above other elements if needed */
     }
-     #settings button:hover { background-color: #c82333; }
-     #settings button:active { background-color: #bd2130; }
+    #settings-dropdown button:hover { background-color: #5a6268; }
+    #settings-dropdown button:active { background-color: #4d5358; transform: scale(0.99); }
+
+    /* Specific colors for settings buttons */
+    #settings-dropdown #unlogged-sleep { background-color: #17a2b8; } /* Teal */
+    #settings-dropdown #unlogged-sleep:hover { background-color: #138496; }
+    #settings-dropdown #unlogged-sleep:active { background-color: #117a8b; }
+
+    #settings-dropdown #export { background-color: #6c757d; } /* Grey */
+    #settings-dropdown #export:hover { background-color: #5a6268; }
+    #settings-dropdown #export:active { background-color: #4d5358; }
+
+    /* #settings-dropdown #undo { ... } */ /* Removed styling for undo inside dropdown */
+
+    #settings-dropdown #clear { background-color: #dc3545; } /* Red */
+    #settings-dropdown #clear:hover { background-color: #c82333; }
+    #settings-dropdown #clear:active { background-color: #bd2130; }
 
 
-    /* Style for the SINGLE status indicator */
+    /* Style for the status indicator */
     #status-indicator {
-      margin-bottom: 1.5rem; /* Increased margin */
-      padding: 0.75rem; /* Slightly larger padding */
+      margin-bottom: 1.5rem;
+      padding: 0.75rem;
       border: 1px solid #ccc;
-      border-radius: 0.5rem; /* Match button radius */
+      border-radius: 0.5rem;
       background-color: #e9ecef; /* Default background */
       text-align: center;
-      font-size: 1em; /* Slightly larger font */
-      font-weight: bold; /* Make it stand out more */
-      color: #495057; /* Darker grey text */
-      line-height: 1.5; /* Improve readability */
+      font-size: 1em;
+      font-weight: bold;
+      color: #495057;
+      line-height: 1.5;
+      cursor: pointer; /* Indicate it's clickable */
+      transition: background-color 0.3s ease; /* Smooth transition */
+    }
+    #status-indicator.expanded {
+      background-color: #ddeeff; /* Lighter blue when expanded */
+    }
+    #status-details {
+      display: none; /* Hidden by default */
+      margin-top: 0.75rem;
+      font-size: 0.85em;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+      background-color: #ffffff;
+      padding: 0.5rem 0.75rem;
+      border-top: 1px solid #ccc;
+      line-height: 1.4;
+      color: #333;
+      border-radius: 0 0 0.5rem 0.5rem;
+    }
+    #status-details div {
+       margin-bottom: 0.3rem;
+       padding-bottom: 0.3rem;
+       border-bottom: 1px dotted #eee;
+    }
+    #status-details div:last-child {
+       border-bottom: none;
+       margin-bottom: 0;
+       padding-bottom: 0;
     }
 
   </style>
@@ -164,16 +216,21 @@
 <body>
   <h1>🛌 Sleep Study</h1>
 
-  <div style="position: relative; height: 3rem;"> <button id="export">Export</button>
+  <div id="settings-container">
       <details id="settings">
         <summary>⚙️</summary>
-        <button id="clear">Clear All Data</button>
+        <div id="settings-dropdown">
+            <button id="unlogged-sleep">Log Unlogged Sleep</button>
+            <button id="export">Export Data</button>
+            <button id="clear">Clear All Data</button>
+        </div>
       </details>
   </div>
 
-
   <div id="status-indicator">
-    Status: Initializing...
+      <span id="status-indicator-text">Status: Initializing...</span>
+      <div id="status-details">
+          </div>
   </div>
 
   <button id="attempt">Attempting to sleep</button>
@@ -181,29 +238,30 @@
   <button id="wake">Woke Up</button>
   <button id="interrupt">Sleep Interrupted</button>
 
-  <button id="quality">Sleep Quality (after sleep)</button>
-  <button id="energy">Energy / Sleepiness (anytime)</button>
+  <button id="quality">Log Sleep Quality</button>
+  <button id="energy">Log Energy / Sleepiness</button>
 
-  <button id="undo">Undo Last Sleep Action</button>
+  <button id="undo">Undo Last Action</button>
 
   <div id="toast-container"></div>
 
   <script>
-    // Wrap all script logic in DOMContentLoaded to ensure HTML is ready
     document.addEventListener('DOMContentLoaded', () => {
       // --- Storage Keys ---
       const CYCLES_KEY = 'sleepStudyCycles';
       const ACTIVE_KEY = 'sleepStudyActive';
       const ENERGY_LOG_KEY = 'sleepStudyEnergyLog';
+      const QUALITY_LOG_KEY = 'sleepStudyQualityLog';
+      const UNLOGGED_SLEEP_KEY = 'sleepStudyUnloggedSleep';
 
-      // --- Load/Save Functions (with error handling) ---
+      // --- Load/Save Functions ---
       function loadData(key) {
           try {
               return JSON.parse(localStorage.getItem(key) || '[]');
           } catch (e) {
               console.error(`Error parsing data from localStorage key "${key}":`, e);
               showToast(`Error loading data: ${key}`);
-              return []; // Return empty array on error
+              return [];
           }
       }
       function saveData(key, data) {
@@ -214,370 +272,386 @@
               showToast(`Error saving data: ${key}`);
           }
       }
-      // Specific wrappers for clarity
+      // Specific wrappers
       const loadCycles = () => loadData(CYCLES_KEY);
       const saveCycles = (data) => saveData(CYCLES_KEY, data);
       const loadActive = () => loadData(ACTIVE_KEY);
       const saveActive = (data) => saveData(ACTIVE_KEY, data);
       const loadEnergyLog = () => loadData(ENERGY_LOG_KEY);
       const saveEnergyLog = (data) => saveData(ENERGY_LOG_KEY, data);
+      const loadQualityLog = () => loadData(QUALITY_LOG_KEY);
+      const saveQualityLog = (data) => saveData(QUALITY_LOG_KEY, data);
+      const loadUnloggedSleep = () => loadData(UNLOGGED_SLEEP_KEY);
+      const saveUnloggedSleep = (data) => saveData(UNLOGGED_SLEEP_KEY, data);
 
-
-      // --- Time Fetching (fetches Poland time, falls back to local) ---
+      // --- Time Fetching ---
       async function fetchWarsawTimeISO() {
-        let timeSource = 'local_fallback'; // Default to local fallback
-        const apiUrl = 'https://worldtimeapi.org/api/timezone/Europe/Warsaw';
-
-        try {
-          const res = await fetch(apiUrl);
-          if (!res.ok) throw new Error(`WorldTimeAPI response not OK: ${res.status}`); // Check HTTP status
-
-          const data = await res.json();
-
-          // Validate WorldTimeAPI response structure
-          if (!data || typeof data.datetime !== 'string') {
-            throw new Error('Invalid data structure from WorldTimeAPI');
-          }
-
-          // Create Date object from the datetime field
-          const dateObj = new Date(data.datetime);
-
-          // Validate the parsed date
-          if (isNaN(dateObj.getTime())) {
-            throw new Error('Invalid date format received from WorldTimeAPI');
-          }
-
-          timeSource = 'worldtimeapi.org'; // Mark as API time if successful
-          return { iso: dateObj.toISOString(), source: timeSource };
-
-        } catch (error) {
-          // Log the specific error for debugging
-          console.error("WorldTimeAPI fetch failed, using local device time:", error);
-          // Show a generic error toast to the user
-          showToast(`Using local device time (Time Service Error)`);
-          // Fallback to local time - returns the same object structure
-          return { iso: new Date().toISOString(), source: timeSource };
-        }
+       const apiKey = 'K2W2RKOIOBYI'; // <<< YOUR_TIMEZONEDB_API_KEY >>>
+       if (apiKey === 'YOUR_TIMEZONEDB_API_KEY' || !apiKey) {
+           console.error("TimezoneDB API Key not set!");
+           showToast("Time Service Error (API Key Missing)");
+           return { iso: new Date().toISOString(), source: 'local_unreliable' };
+       }
+       const zone = 'Europe/Warsaw';
+       const url = `https://api.timezonedb.com/v2.1/get-time-zone?key=${apiKey}&format=json&by=zone&zone=${zone}`;
+       let timeSource = 'local_unreliable';
+       try {
+         const res = await fetch(url);
+         if (!res.ok) throw new Error(`TimezoneDB response not OK: ${res.status}`);
+         const data = await res.json();
+         if (data && data.status === 'OK' && data.timestamp) {
+           const dateObj = new Date(data.timestamp * 1000);
+           if (!isNaN(dateObj.getTime())) {
+             timeSource = 'timezonedb';
+             return { iso: dateObj.toISOString(), source: timeSource };
+           } else { throw new Error('Invalid timestamp from TimezoneDB'); }
+         } else { throw new Error(data.message || 'Invalid data structure from TimezoneDB'); }
+       } catch (error) {
+         console.error("TimezoneDB fetch failed, falling back:", error);
+         showToast(`Using local device time (Time Service Error)`);
+         return { iso: new Date().toISOString(), source: timeSource };
+       }
       }
 
-      // --- Toast Notification Function ---
+      // --- Toast Notification ---
       function showToast(msg) {
         const container = document.getElementById('toast-container');
-        if (!container) {
-            console.warn("Toast container not found!");
-            return; // Safety check if container isn't ready or removed
-        }
+        if (!container) return;
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.textContent = msg;
         container.appendChild(toast);
-
-        // Function to remove the toast element
-        const cleanup = () => {
-            // Check if the toast is still a child before removing
-            if (container.contains(toast)) {
-                container.removeChild(toast);
-            }
-        };
-
-        // Set a fallback timer to ensure removal after animation duration + delay
-        // (300ms fade-in + 2200ms visible + 300ms fade-out = 2800ms total + buffer)
+        const cleanup = () => { if (container.contains(toast)) container.removeChild(toast); };
         const fallbackTimeout = setTimeout(cleanup, 3000);
-
-        // Listen for the end of the 'fadeout' animation
         toast.addEventListener('animationend', (event) => {
-            // Only remove if it's the fadeout animation ending
-            if (event.animationName === 'fadeout') {
-               clearTimeout(fallbackTimeout); // Clear the safety timeout
-               cleanup();
-            }
-        // Use { once: true } so the listener removes itself after firing
+            if (event.animationName === 'fadeout') { clearTimeout(fallbackTimeout); cleanup(); }
         }, { once: true });
       }
 
-      // --- Status Indicator Update Function ---
+      // --- Status Indicator Update ---
       function updateStatusIndicator() {
         const indicator = document.getElementById('status-indicator');
-        if (!indicator) return; // Safety check
+        const indicatorTextElement = document.getElementById('status-indicator-text');
+        if (!indicator || !indicatorTextElement) return;
 
         const active = loadActive();
         const cycles = loadCycles();
         const energyLog = loadEnergyLog();
+        const qualityLog = loadQualityLog();
+        const unloggedSleep = loadUnloggedSleep();
 
         let statusText = '';
-        indicator.style.backgroundColor = '#e9ecef'; // Default idle background
+        indicator.style.backgroundColor = '#e9ecef';
 
         if (active.length > 0) {
-          // State: Actively attempting sleep
           statusText = `Status: Attempting sleep (${active.length} attempt${active.length > 1 ? 's' : ''})`;
-          indicator.style.backgroundColor = '#d1ecf1'; // Light blue for active state
+          indicator.style.backgroundColor = '#d1ecf1';
         } else {
-          // State: Idle
+          let lastEventTime = 0;
+          let lastEventDesc = 'No data recorded yet.';
+
           if (cycles.length > 0) {
-            const lastCycle = cycles[cycles.length - 1];
-            let lastCycleEventDesc = 'Unknown last cycle event.'; // Default text
-            if (lastCycle.type === 'sleep') {
-              lastCycleEventDesc = lastCycle.interrupted ? 'Interrupted sleep ended.' : 'Sleep session ended.';
-            } else if (lastCycle.type === 'failure') {
-              lastCycleEventDesc = 'Failure to sleep recorded.';
-            }
-            statusText = `Status: Idle. Last cycle: ${lastCycleEventDesc}`;
-          } else if (energyLog.length > 0) {
-            statusText = 'Status: Idle. Last event: Energy/sleepiness logged.';
-          } else {
-            statusText = 'Status: Idle. No data recorded yet.';
+              const lc = cycles[cycles.length - 1];
+              const ts = new Date(lc.type === 'sleep' ? lc.wakeTimestamp : lc.failure_timestamp).getTime();
+              if (ts > lastEventTime) { lastEventTime = ts; lastEventDesc = lc.type === 'sleep' ? (lc.interrupted ? 'Interrupted sleep ended.' : 'Sleep session ended.') : 'Failure to sleep recorded.'; }
           }
+          if (energyLog.length > 0) {
+              const ts = new Date(energyLog[energyLog.length - 1].timestamp).getTime();
+              if (ts > lastEventTime) { lastEventTime = ts; lastEventDesc = 'Energy/sleepiness logged.'; }
+          }
+          if (qualityLog.length > 0) {
+              const ts = new Date(qualityLog[qualityLog.length - 1].timestamp).getTime();
+              if (ts > lastEventTime) { lastEventTime = ts; lastEventDesc = 'Sleep quality logged.'; }
+          }
+          if (unloggedSleep.length > 0) {
+              const ts = new Date(unloggedSleep[unloggedSleep.length - 1].wakeTimestamp).getTime();
+              if (ts > lastEventTime) { lastEventTime = ts; lastEventDesc = 'Unlogged sleep recorded.'; }
+          }
+          statusText = `Status: Idle. Last event: ${lastEventDesc}`;
         }
-        indicator.textContent = statusText;
+        indicatorTextElement.textContent = statusText;
       }
 
+      // --- Display Last 10 Events ---
+      function displayLastEvents() {
+          const detailsContainer = document.getElementById('status-details');
+          if (!detailsContainer) return;
 
-      // --- Action Functions (Record events, update state and UI) ---
+          const cycles = loadCycles();
+          const energy = loadEnergyLog();
+          const quality = loadQualityLog();
+          const active = loadActive();
+          const unlogged = loadUnloggedSleep();
 
+          let allRawEvents = [];
+
+          cycles.forEach(cycle => {
+              if (cycle.type === 'failure') {
+                  (cycle.failed_attempts || []).forEach(att => allRawEvents.push({ type: 'attempt', timestamp: att.timestamp, timeSource: att.timeSource }));
+                  allRawEvents.push({ type: 'failure', timestamp: cycle.failure_timestamp, reason: cycle.reason, timeSource: cycle.timeSource });
+              } else if (cycle.type === 'sleep') {
+                  (cycle.attempts || []).forEach(att => allRawEvents.push({ type: 'attempt', timestamp: att.timestamp, timeSource: att.timeSource }));
+                  allRawEvents.push({ type: cycle.interrupted ? 'interrupt' : 'wake', timestamp: cycle.wakeTimestamp, notes: cycle.notes, timeSource: cycle.wakeTimeSource });
+              }
+          });
+
+          energy.forEach(log => allRawEvents.push({ type: 'energy', ...log }));
+          quality.forEach(log => allRawEvents.push({ type: 'quality', ...log }));
+          unlogged.forEach(log => allRawEvents.push({ type: 'unlogged_sleep', ...log, timestamp: log.wakeTimestamp }));
+          active.forEach(att => allRawEvents.push({ type: 'attempt', status: 'active', ...att }));
+
+          allRawEvents.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          const lastTenEvents = allRawEvents.slice(0, 10);
+
+          detailsContainer.innerHTML = '';
+          if (lastTenEvents.length === 0) {
+              detailsContainer.innerHTML = '<div>No recent events recorded.</div>';
+              return;
+          }
+
+          lastTenEvents.forEach(event => {
+              const eventDiv = document.createElement('div');
+              let details = '';
+              switch (event.type) {
+                  case 'attempt': details = `Attempt ${event.status === 'active' ? '(Active)' : ''}`; break;
+                  case 'failure': details = `Failed ${event.reason ? `(${event.reason})` : ''}`; break;
+                  case 'wake': details = `Woke up ${event.notes ? `(${event.notes})` : ''}`; break;
+                  case 'interrupt': details = `Interrupted ${event.notes ? `(${event.notes})` : ''}`; break;
+                  case 'quality': details = `Quality: ${event.sleepQuality || 'N/A'} ${event.notes ? `(${event.notes})` : ''}`; break;
+                  case 'energy': details = `Energy: ${event.energy || 'N/A'}, Sleepiness: ${event.sleepiness || 'N/A'} ${event.notes ? `(${event.notes})` : ''}`; break;
+                  case 'unlogged_sleep': details = `Unlogged Sleep: ${event.durationHours || 0}h ${event.durationMinutes || 0}m ${event.notes ? `(${event.notes})` : ''}`; break;
+                  default: details = 'Unknown Event';
+              }
+              const timeSourceInfo = (event.timeSource !== 'timezonedb' && event.timeSource) ? ` [${event.timeSource.replace('_unreliable','')}]` : '';
+              eventDiv.innerHTML = `${details}${timeSourceInfo}`;
+              detailsContainer.appendChild(eventDiv);
+          });
+      }
+
+      // --- Action Functions ---
       async function recordAttempt() {
-        const timeResult = await fetchWarsawTimeISO(); // Fetch time (needed internally)
+        const timeResult = await fetchWarsawTimeISO();
         const attempts = loadActive();
         attempts.push({ timestamp: timeResult.iso, timeSource: timeResult.source });
         saveActive(attempts);
-        showToast(`Attempt logged (Source: ${timeResult.source})`); // No timestamp in toast
+        showToast(`Attempt logged (Source: ${timeResult.source})`);
         updateStatusIndicator();
       }
 
       async function recordFailure() {
-        const timeResult = await fetchWarsawTimeISO(); // Fetch time
+        const timeResult = await fetchWarsawTimeISO();
         const attempts = loadActive();
-        if (!attempts.length) {
-            showToast('No active attempts to mark as failed.');
-            return;
-        }
-        // Calculate duration (requires internal timestamps)
-        const firstTs = attempts[0] ? new Date(attempts[0].timestamp) : null;
-        const dur = firstTs ? Math.round((new Date(timeResult.iso) - firstTs)/60000) : 0;
+        if (!attempts.length) { showToast('No active attempts to mark as failed.'); return; }
         const reason = prompt('Reason for failing to sleep (optional):','') || '';
-        // Check if user cancelled the prompt
         if (reason === null) { showToast("Failure recording cancelled."); return; }
-
-        const failureSession = {
-          type: 'failure',
-          failed_attempts: attempts.slice(), // Store a copy
-          failure_timestamp: timeResult.iso,
-          timeSource: timeResult.source,
-          failureDurationMin: dur,
-          reason
-        };
+        const failureSession = { type: 'failure', failed_attempts: attempts.slice(), failure_timestamp: timeResult.iso, timeSource: timeResult.source, reason };
         const cycles = loadCycles();
         cycles.push(failureSession);
         saveCycles(cycles);
-        saveActive([]); // Clear active attempts
-        showToast(`Failure session recorded (Attempt duration: ${dur} min)`); // Show duration, not time
+        saveActive([]);
+        showToast(`Failure session recorded`);
         updateStatusIndicator();
       }
 
       async function finalize(interrupted) {
-          const timeResult = await fetchWarsawTimeISO(); // Fetch time
+          const timeResult = await fetchWarsawTimeISO();
           const attempts = loadActive();
           if (!attempts.length) { showToast('No attempt to finalize'); return; }
-
-          // Calculate durations (requires internal timestamps)
-          const firstAttemptTime = new Date(attempts[0].timestamp);
-          const lastAttemptTime  = new Date(attempts[attempts.length - 1].timestamp);
-          const wakeTime = new Date(timeResult.iso);
-          const fallAsleepMin = (lastAttemptTime >= firstAttemptTime) ? Math.round((lastAttemptTime - firstAttemptTime) / 60000) : 0;
-          const sleepDurationMin = (wakeTime >= lastAttemptTime) ? Math.round((wakeTime - lastAttemptTime) / 60000) : 0;
-
           const notes = prompt('Any notes for this sleep session?','')||'';
-           // Check if user cancelled the prompt
-          if (notes === null) { showToast("Wake recording cancelled."); return; }
-
-          const cycle = {
-            type: 'sleep',
-            attempts, // Contains attempt timestamps and sources
-            attemptCount: attempts.length,
-            fallAsleepMin: fallAsleepMin,
-            wakeTimestamp: timeResult.iso,
-            wakeTimeSource: timeResult.source,
-            sleepDurationMin: sleepDurationMin,
-            interrupted,
-            notes: notes,
-            evaluations: [] // Initialize evaluations array
-          };
+           if (notes === null) { showToast("Wake recording cancelled."); return; }
+          const cycle = { type: 'sleep', attempts, wakeTimestamp: timeResult.iso, wakeTimeSource: timeResult.source, interrupted, notes };
           const cycles = loadCycles();
           cycles.push(cycle);
           saveCycles(cycles);
-          saveActive([]); // Clear active attempts
-          showToast(`Sleep session recorded (Duration: ${sleepDurationMin} min)`); // Show duration, not time
+          saveActive([]);
+          showToast(`Sleep session recorded`);
           updateStatusIndicator();
       }
 
       async function recordQuality() {
-        const timeResult = await fetchWarsawTimeISO(); // Fetch time
-        const cycles = loadCycles();
-        if (!cycles.length) { showToast('No session to evaluate quality for'); return; }
-        const lastCycle = cycles[cycles.length - 1];
-
-        // Ensure the last cycle was actually a sleep session
-        if (lastCycle.type !== 'sleep') {
-            showToast('Last cycle was not sleep. Cannot log quality.');
-            return;
-        }
-
-        // Prompt without showing time
-        const sleepQ = prompt(`Sleep quality for last session (0–10, text allowed):`,'');
+        const timeResult = await fetchWarsawTimeISO();
+        const sleepQ = prompt(`Current evaluation of recent sleep quality (0–10, text allowed):`, '');
         if (sleepQ === null) { showToast("Quality logging cancelled."); return; }
-        const notesQ = prompt('Optional notes for sleep quality:','')||'';
+        const notesQ = prompt('Optional notes for sleep quality evaluation:', '') || '';
         if (notesQ === null) { showToast("Quality logging cancelled."); return; }
-
-        // Ensure evaluations array exists on the last cycle object
-        if (!Array.isArray(lastCycle.evaluations)) {
-            lastCycle.evaluations = [];
-        }
-
-        lastCycle.evaluations.push({
-            type: 'quality',
-            timestamp: timeResult.iso,
-            timeSource: timeResult.source,
-            sleepQuality: sleepQ,
-            notes: notesQ
-        });
-        saveCycles(cycles); // Save the modified cycles array
-        showToast('Sleep quality logged for last session'); // No time in toast
-        updateStatusIndicator(); // Status indicator doesn't change, but call for consistency
+        const qualityEntry = { timestamp: timeResult.iso, timeSource: timeResult.source, sleepQuality: sleepQ, notes: notesQ };
+        const qualityLog = loadQualityLog();
+        qualityLog.push(qualityEntry);
+        saveQualityLog(qualityLog);
+        showToast('Sleep quality evaluation logged');
+        updateStatusIndicator();
       }
 
       async function recordEnergy() {
-        const timeResult = await fetchWarsawTimeISO(); // Fetch time
+        const timeResult = await fetchWarsawTimeISO();
         const energy = prompt('Current Energy level (0–10 or text):','');
          if (energy === null) { showToast("Energy logging cancelled."); return; }
         const sleepiness = prompt('Current Sleepiness (0–10 or text):','');
          if (sleepiness === null) { showToast("Energy logging cancelled."); return; }
         const notesE = prompt('Optional notes for energy/sleepiness:','')||'';
          if (notesE === null) { showToast("Energy logging cancelled."); return; }
-
-        const energyEntry = {
-          timestamp: timeResult.iso,
-          timeSource: timeResult.source,
-          energy: energy,
-          sleepiness: sleepiness,
-          notes: notesE
-        };
-
+        const energyEntry = { timestamp: timeResult.iso, timeSource: timeResult.source, energy: energy, sleepiness: sleepiness, notes: notesE };
         const energyLog = loadEnergyLog();
         energyLog.push(energyEntry);
         saveEnergyLog(energyLog);
-        showToast('Energy/sleepiness logged'); // No time in toast
-        updateStatusIndicator(); // Status indicator might show this if no cycles exist
+        showToast('Energy/sleepiness logged');
+        updateStatusIndicator();
       }
 
+      async function recordUnloggedSleep() {
+          const timeResult = await fetchWarsawTimeISO();
+          const hoursStr = prompt("How many HOURS did you sleep (approx)?", "8");
+          if (hoursStr === null) { showToast("Unlogged sleep cancelled."); return; }
+          const hours = parseInt(hoursStr);
+          if (isNaN(hours) || hours < 0) { showToast("Invalid hours entered."); return; }
+          const minutesStr = prompt("How many additional MINUTES did you sleep (approx)?", "0");
+          if (minutesStr === null) { showToast("Unlogged sleep cancelled."); return; }
+          const minutes = parseInt(minutesStr);
+          if (isNaN(minutes) || minutes < 0 || minutes >= 60) { showToast("Invalid minutes entered."); return; }
+          const notes = prompt("Any notes for this unlogged sleep?", "") || '';
+          if (notes === null) { showToast("Unlogged sleep cancelled."); return; }
+          const totalMinutesSlept = (hours * 60) + minutes;
+          const wakeDate = new Date(timeResult.iso);
+          const approxStartDate = new Date(wakeDate.getTime() - totalMinutesSlept * 60000);
+          const unloggedEntry = { wakeTimestamp: timeResult.iso, timeSource: timeResult.source, durationHours: hours, durationMinutes: minutes, approxStartTimestamp: approxStartDate.toISOString(), notes: notes };
+          const unloggedSleepLog = loadUnloggedSleep();
+          unloggedSleepLog.push(unloggedEntry);
+          saveUnloggedSleep(unloggedSleepLog);
+          showToast(`Logged ${hours}h ${minutes}m of unlogged sleep.`);
+          updateStatusIndicator();
+          document.getElementById('settings').open = false;
+      }
+
+      // --- Undo Last Action ---
       function undoLastAction() {
-          let actionDesc = ''; // Describes action type without time
+          let actionDesc = 'Unknown Action';
+          let actionUndone = false;
           const active = loadActive();
           const cycles = loadCycles();
+          const energy = loadEnergyLog();
+          const quality = loadQualityLog();
+          const unlogged = loadUnloggedSleep();
 
-          if (active.length > 0) {
-              // Undoing the last attempt
-              active.pop(); // Remove last attempt
-              saveActive(active);
-              actionDesc = 'Attempt';
-          } else if (cycles.length > 0) {
-              // Undoing the last completed cycle
-              const lastCycle = cycles.pop(); // Remove last cycle
-              saveCycles(cycles); // Save shortened cycles list
+          let lastTimes = [];
+          if (active.length > 0) lastTimes.push({ type: 'active', time: new Date(active[active.length - 1].timestamp).getTime() });
+          if (cycles.length > 0) { const lc = cycles[cycles.length - 1]; lastTimes.push({ type: 'cycle', time: new Date(lc.type === 'sleep' ? lc.wakeTimestamp : lc.failure_timestamp).getTime() }); }
+          if (energy.length > 0) lastTimes.push({ type: 'energy', time: new Date(energy[energy.length - 1].timestamp).getTime() });
+          if (quality.length > 0) lastTimes.push({ type: 'quality', time: new Date(quality[quality.length - 1].timestamp).getTime() });
+          if (unlogged.length > 0) lastTimes.push({ type: 'unlogged', time: new Date(unlogged[unlogged.length - 1].wakeTimestamp).getTime() });
 
-              // Restore the attempts from the undone cycle to active state
-              if (lastCycle.type === 'failure') {
-                  saveActive(lastCycle.failed_attempts || []);
-                  actionDesc = 'Failed-to-sleep session';
-              } else if (lastCycle.type === 'sleep') {
-                  saveActive(lastCycle.attempts || []);
-                  actionDesc = lastCycle.interrupted ? 'Sleep-interrupted session' : 'Sleep session';
-              } else {
-                   actionDesc = 'Unknown cycle type'; // Should not happen
-              }
-          } else {
-              showToast('Nothing to undo');
-              return; // Exit function if nothing to undo
-          }
-          showToast(`Undid: ${actionDesc}.`); // No time in toast
-          updateStatusIndicator(); // Update status to reflect the new state
+          if (lastTimes.length === 0) { showToast('Nothing to undo'); return; }
+
+          lastTimes.sort((a, b) => b.time - a.time);
+          const lastEventType = lastTimes[0].type;
+
+          if (lastEventType === 'active') { active.pop(); saveActive(active); actionDesc = 'Attempt'; actionUndone = true; }
+          else if (lastEventType === 'cycle') { const lastCycle = cycles.pop(); saveCycles(cycles); if (lastCycle.type === 'failure') saveActive(lastCycle.failed_attempts || []); else if (lastCycle.type === 'sleep') saveActive(lastCycle.attempts || []); actionDesc = lastCycle.type === 'sleep' ? (lastCycle.interrupted ? 'Interrupted session' : 'Sleep session') : 'Failed session'; actionUndone = true; }
+          else if (lastEventType === 'energy') { energy.pop(); saveEnergyLog(energy); actionDesc = 'Energy/sleepiness log'; actionUndone = true; }
+          else if (lastEventType === 'quality') { quality.pop(); saveQualityLog(quality); actionDesc = 'Sleep quality log'; actionUndone = true; }
+          else if (lastEventType === 'unlogged') { unlogged.pop(); saveUnloggedSleep(unlogged); actionDesc = 'Unlogged sleep log'; actionUndone = true; }
+
+          if (actionUndone) {
+              showToast(`Undid: ${actionDesc}.`);
+              updateStatusIndicator();
+              // Don't close settings dropdown if undo is outside
+              // document.getElementById('settings').open = false;
+          } else { showToast('Could not determine last action to undo.'); }
       }
 
+      // --- EXPORT FUNCTION ---
       function exportData() {
         const cyclesData = loadCycles();
         const energyData = loadEnergyLog();
+        const qualityData = loadQualityLog();
+        const unloggedData = loadUnloggedSleep();
+        const allEvents = [];
 
-        if (!cyclesData.length && !energyData.length) {
-             showToast('No data to export');
-             return;
-        }
+        if (!cyclesData.length && !energyData.length && !qualityData.length && !unloggedData.length) { showToast('No data to export'); return; }
 
-        // Prepare data object for export
-        const exportObject = {
-            exportTimestamp: new Date().toISOString(), // Timestamp of the export itself
-            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // User's local timezone
-            sleepCycles: cyclesData,
-            energyLog: energyData
-        };
+        energyData.forEach(log => { allEvents.push({ type: 'energy', ...log }); });
+        qualityData.forEach(log => { allEvents.push({ type: 'quality', ...log }); });
+        unloggedData.forEach(log => { allEvents.push({ type: 'unlogged_sleep', ...log }); });
+        cyclesData.forEach(cycle => {
+            if (cycle.type === 'failure') {
+                (cycle.failed_attempts || []).forEach(attempt => { allEvents.push({ type: 'attempt', timestamp: attempt.timestamp, timeSource: attempt.timeSource }); });
+                allEvents.push({ type: 'failure', timestamp: cycle.failure_timestamp, timeSource: cycle.timeSource, reason: cycle.reason });
+            } else if (cycle.type === 'sleep') {
+                (cycle.attempts || []).forEach(attempt => { allEvents.push({ type: 'attempt', timestamp: attempt.timestamp, timeSource: attempt.timeSource }); });
+                allEvents.push({ type: cycle.interrupted ? 'interrupt' : 'wake', timestamp: cycle.wakeTimestamp, timeSource: cycle.wakeTimeSource, interrupted: cycle.interrupted, notes: cycle.notes });
+            }
+        });
 
-        // Create JSON blob
+        allEvents.sort((a, b) => {
+            const timeA = new Date(a.type === 'unlogged_sleep' ? a.wakeTimestamp : a.timestamp);
+            const timeB = new Date(b.type === 'unlogged_sleep' ? b.wakeTimestamp : b.timestamp);
+            return timeA - timeB;
+        });
+
+        const exportObject = { exportTimestamp: new Date().toISOString(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, eventLog: allEvents };
         const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-
-        // Create download link
         const a = document.createElement('a');
         a.href = url;
-        const dateStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const dateStr = new Date().toISOString().slice(0, 10);
         a.download = `sleep-study-data-${dateStr}.json`;
-
-        // Trigger download
-        document.body.appendChild(a); // Append required for Firefox compatibility
-        a.click();
-
-        // Clean up
-        document.body.removeChild(a);
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
         URL.revokeObjectURL(url);
-
         showToast('Export file generated');
+        document.getElementById('settings').open = false;
       }
 
+      // --- Clear All Data Function ---
       function clearData() {
-         // Confirmation dialog
-         if (confirm('⚠️ Are you sure you want to delete ALL recorded sleep and energy data?\nThis action cannot be undone!')) {
-            localStorage.removeItem(CYCLES_KEY);
-            localStorage.removeItem(ACTIVE_KEY);
-            localStorage.removeItem(ENERGY_LOG_KEY);
-            showToast('All data cleared');
-            updateStatusIndicator(); // Update status to "No data" state
-         } else {
-            showToast('Clear data cancelled');
-         }
+        if (confirm('⚠️ Are you sure you want to delete ALL recorded sleep, energy, quality, and unlogged data?\nThis action cannot be undone!')) {
+          localStorage.removeItem(CYCLES_KEY);
+          localStorage.removeItem(ACTIVE_KEY);
+          localStorage.removeItem(ENERGY_LOG_KEY);
+          localStorage.removeItem(QUALITY_LOG_KEY);
+          localStorage.removeItem(UNLOGGED_SLEEP_KEY);
+          showToast('All data cleared');
+          updateStatusIndicator();
+          document.getElementById('settings').open = false;
+        } else {
+          showToast('Clear data cancelled');
+        }
       }
 
-
-      // --- Initialization on Page Load ---
-
-      // Set the initial status display based on stored data
+      // --- Initialization ---
       updateStatusIndicator();
-
-      // Optional PWA service worker registration stub
-      // Ensure you have a 'sw.js' file in the same directory for this to work
       if ('serviceWorker' in navigator) {
-           navigator.serviceWorker.register('sw.js')
-           .then(reg => console.log('Service Worker registered successfully.', reg))
-           .catch(err => console.error('Service Worker registration failed:', err));
+          navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker registered successfully.', reg))
+          .catch(err => console.error('Service Worker registration failed:', err));
        }
 
-       // --- Wire buttons to their functions ---
-       document.getElementById('attempt').onclick   = recordAttempt;
-       document.getElementById('fail').onclick      = recordFailure;
-       document.getElementById('wake').onclick      = () => finalize(false); // Use arrow function to pass argument
-       document.getElementById('interrupt').onclick = () => finalize(true); // Use arrow function to pass argument
-       document.getElementById('quality').onclick   = recordQuality;
-       document.getElementById('energy').onclick    = recordEnergy;
-       document.getElementById('export').onclick    = exportData;
-       document.getElementById('undo').onclick      = undoLastAction;
-       document.getElementById('clear').onclick     = clearData;
+      // --- Status Indicator Click Listener ---
+      const statusIndicator = document.getElementById('status-indicator');
+      if (statusIndicator) {
+          statusIndicator.addEventListener('click', () => {
+              const detailsContainer = document.getElementById('status-details');
+              if (detailsContainer) {
+                  const isHidden = detailsContainer.style.display === 'none';
+                  if (isHidden) { displayLastEvents(); detailsContainer.style.display = 'block'; statusIndicator.classList.add('expanded'); }
+                  else { detailsContainer.style.display = 'none'; statusIndicator.classList.remove('expanded'); }
+              }
+          });
+      }
 
-    }); // End of DOMContentLoaded listener
+      // --- Wire buttons ---
+      document.getElementById('attempt').onclick   = recordAttempt;
+      document.getElementById('fail').onclick      = recordFailure;
+      document.getElementById('wake').onclick      = () => finalize(false);
+      document.getElementById('interrupt').onclick = () => finalize(true);
+      document.getElementById('quality').onclick   = recordQuality;
+      document.getElementById('energy').onclick    = recordEnergy;
+      document.getElementById('undo').onclick      = undoLastAction; // Moved back here
+      // Wire buttons inside settings
+      document.getElementById('unlogged-sleep').onclick = recordUnloggedSleep;
+      document.getElementById('export').onclick    = exportData;
+      // document.getElementById('undo').onclick      = undoLastAction; // Removed from here
+      document.getElementById('clear').onclick     = clearData;
+
+    }); // End DOMContentLoaded
   </script>
 </body>
 </html>
